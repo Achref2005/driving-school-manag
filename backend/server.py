@@ -135,7 +135,9 @@ async def get_schools_by_state(state_id: int, db=Depends(get_db)):
         result = db.execute(
             text("""
                 SELECT d.id, d.name, d.address, d.phone, d.email, 
-                       d.description, d.rating, s.name as state_name 
+                       d.description, d.rating, s.name as state_name,
+                       d.theory_course_price, d.parking_course_price, 
+                       d.road_course_price, d.full_package_price, d.images
                 FROM driving_schools d 
                 JOIN states s ON d.state_id = s.id 
                 WHERE d.state_id = :state_id
@@ -145,6 +147,7 @@ async def get_schools_by_state(state_id: int, db=Depends(get_db)):
         
         schools = []
         for row in result:
+            images = row[12].split(',') if row[12] else []
             schools.append({
                 "id": row[0],
                 "name": row[1],
@@ -153,7 +156,12 @@ async def get_schools_by_state(state_id: int, db=Depends(get_db)):
                 "email": row[4],
                 "description": row[5],
                 "rating": float(row[6]),
-                "state_name": row[7]
+                "state_name": row[7],
+                "theory_course_price": float(row[8]) if row[8] else 0.0,
+                "parking_course_price": float(row[9]) if row[9] else 0.0,
+                "road_course_price": float(row[10]) if row[10] else 0.0,
+                "full_package_price": float(row[11]) if row[11] else 0.0,
+                "images": images
             })
         
         return schools
