@@ -11,6 +11,15 @@ import Login from './components/auth/Login';
 // Dashboard components
 import AdminDashboard from './components/dashboard/AdminDashboard';
 
+// Student components
+import StudentsList from './components/students/StudentsList';
+
+// Instructor components
+import InstructorsList from './components/instructors/InstructorsList';
+
+// Course components
+import CoursesList from './components/courses/CoursesList';
+
 // Main App
 function App() {
   // Authentication state
@@ -89,6 +98,24 @@ function App() {
             <AdminDashboard auth={auth} />
           </Layout>
         } />
+        
+        <Route path="/admin/students" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['admin']}>
+            <StudentsList auth={auth} />
+          </Layout>
+        } />
+        
+        <Route path="/admin/instructors" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['admin']}>
+            <InstructorsList auth={auth} />
+          </Layout>
+        } />
+        
+        <Route path="/admin/courses" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['admin']}>
+            <CoursesList auth={auth} />
+          </Layout>
+        } />
 
         {/* Instructor Routes */}
         <Route path="/instructor/dashboard" element={
@@ -96,11 +123,41 @@ function App() {
             <div>Instructor Dashboard</div>
           </Layout>
         } />
+        
+        <Route path="/instructor/students" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['instructor']}>
+            <StudentsList auth={auth} />
+          </Layout>
+        } />
+        
+        <Route path="/instructor/schedule" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['instructor']}>
+            <div>Instructor Schedule</div>
+          </Layout>
+        } />
 
         {/* Student Routes */}
         <Route path="/student/dashboard" element={
           <Layout auth={auth} onLogout={handleLogout} allowedRoles={['student']}>
             <div>Student Dashboard</div>
+          </Layout>
+        } />
+        
+        <Route path="/student/courses" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['student']}>
+            <CoursesList auth={auth} />
+          </Layout>
+        } />
+        
+        <Route path="/student/schedule" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['student']}>
+            <div>Student Schedule</div>
+          </Layout>
+        } />
+        
+        <Route path="/student/payments" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['student']}>
+            <div>Student Payments</div>
           </Layout>
         } />
 
