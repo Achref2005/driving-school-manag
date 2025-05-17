@@ -1,53 +1,140 @@
-import { useEffect } from "react";
-import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Layout components
+import Layout from './components/layout/Layout';
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+// Auth components
+import Login from './components/auth/Login';
 
+// Dashboard components
+import AdminDashboard from './components/dashboard/AdminDashboard';
+
+// Main App
+function App() {
+  // Authentication state
+  const [auth, setAuth] = useState({
+    isAuthenticated: false,
+    user: null,
+    token: null,
+    loading: true
+  });
+
+  // Check for token and user on mount
   useEffect(() => {
-    helloWorldApi();
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      setAuth({
+        isAuthenticated: true,
+        user: JSON.parse(user),
+        token,
+        loading: false
+      });
+    } else {
+      setAuth({ isAuthenticated: false, user: null, token: null, loading: false });
+    }
   }, []);
 
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+  // Set axios auth header
+  useEffect(() => {
+    if (auth.token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${auth.token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [auth.token]);
 
-function App() {
+  // Handle login
+  const handleLogin = (authData) => {
+    setAuth({
+      isAuthenticated: true,
+      user: authData.user,
+      token: authData.token,
+      loading: false
+    });
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setAuth({ isAuthenticated: false, user: null, token: null, loading: false });
+  };
+
+  // Show loading spinner while checking auth
+  if (auth.loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <Router>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={
+          <Layout auth={auth} requireAuth={false}>
+            <Login setAuth={handleLogin} />
+          </Layout>
+        } />
+
+        {/* Admin Routes */}
+        <Route path="/admin/dashboard" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['admin']}>
+            <AdminDashboard auth={auth} />
+          </Layout>
+        } />
+
+        {/* Instructor Routes */}
+        <Route path="/instructor/dashboard" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['instructor']}>
+            <div>Instructor Dashboard</div>
+          </Layout>
+        } />
+
+        {/* Student Routes */}
+        <Route path="/student/dashboard" element={
+          <Layout auth={auth} onLogout={handleLogout} allowedRoles={['student']}>
+            <div>Student Dashboard</div>
+          </Layout>
+        } />
+
+        {/* Redirect based on role or to login */}
+        <Route path="/" element={
+          auth.isAuthenticated ? (
+            auth.user.role === 'admin' ? (
+              <Navigate to="/admin/dashboard" replace />
+            ) : auth.user.role === 'instructor' ? (
+              <Navigate to="/instructor/dashboard" replace />
+            ) : (
+              <Navigate to="/student/dashboard" replace />
+            )
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+
+        {/* Catch all - redirect to appropriate dashboard or login */}
+        <Route path="*" element={
+          auth.isAuthenticated ? (
+            auth.user.role === 'admin' ? (
+              <Navigate to="/admin/dashboard" replace />
+            ) : auth.user.role === 'instructor' ? (
+              <Navigate to="/instructor/dashboard" replace />
+            ) : (
+              <Navigate to="/student/dashboard" replace />
+            )
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+      </Routes>
+    </Router>
   );
 }
 
