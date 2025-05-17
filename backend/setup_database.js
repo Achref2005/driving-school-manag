@@ -1,6 +1,7 @@
 const mysql = require('mysql2/promise');
 const dotenv = require('dotenv');
 const winston = require('winston');
+const bcrypt = require('bcryptjs');
 
 // Load environment variables
 dotenv.config();
@@ -206,13 +207,17 @@ async function setupDatabase() {
     `);
     logger.info('Exams table created or already exists');
 
+    // Hash password for admin user
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('password', salt);
+
     // Insert admin user if it doesn't exist
     await connection.query(`
       INSERT IGNORE INTO users 
       (id, username, email, password, role, first_name, last_name) 
       VALUES 
-      ('admin-uuid', 'admin', 'admin@drivingschool.com', '$2a$10$CwTycUXWue0Thq9StjUM0uQxTmrz4FzJOMpQvi6.9Z4kkOD0PD5P2', 'admin', 'Admin', 'User')
-    `);
+      ('admin-uuid', 'admin', 'admin@drivingschool.com', ?, 'admin', 'Admin', 'User')
+    `, [hashedPassword]);
     logger.info('Admin user created or already exists');
 
     // Insert sample data
