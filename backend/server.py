@@ -111,7 +111,7 @@ class Course(CourseBase):
         orm_mode = True
 
 # API routes
-@app.get("/")
+@app.get("/api")
 def read_root():
     return {"message": "Welcome to Driving School Management API"}
 
