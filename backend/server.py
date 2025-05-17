@@ -18,8 +18,8 @@ load_dotenv()
 
 # Database connection
 MYSQL_HOST = os.environ.get("MYSQL_HOST", "localhost")
-MYSQL_USER = os.environ.get("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "")
+MYSQL_USER = os.environ.get("MYSQL_USER", "drivingadmin")
+MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "password123")
 MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "driving_school_db")
 
 SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DATABASE}"
